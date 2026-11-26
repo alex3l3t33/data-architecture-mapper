@@ -1,0 +1,33 @@
+flowchart LR
+  n_1ou7976[["orders-mongodb-dlq"]]
+  n_1ug3vgo[["orders-search-dlq"]]
+  n_55c2ti[["https://search.example.test"]]
+  n_dan7u[["/data/orders.ndjson"]]
+  n_1mt5kn1{{"orders-file-source"}}
+  n_stv0ol{{"orders-mongodb-sink"}}
+  n_17iv2ft{{"orders-search-sink"}}
+  n_2w18ko(("orders"))
+  n_98uxjl[("commerce.orders")]
+  n_dan7u -->|READS_FROM| n_1mt5kn1
+  n_1mt5kn1 -->|PRODUCES| n_2w18ko
+  n_stv0ol -->|ROUTES_ERRORS_TO| n_1ou7976
+  n_stv0ol -->|WRITES_TO| n_98uxjl
+  n_17iv2ft -->|ROUTES_ERRORS_TO| n_1ug3vgo
+  n_17iv2ft -->|WRITES_TO| n_55c2ti
+  n_2w18ko -->|CONSUMES| n_stv0ol
+  n_2w18ko -->|CONSUMES| n_17iv2ft
+  classDef type_kafka_topic fill:#f3b61f,color:#17202a,stroke:#b58100
+  classDef type_kafka_connector fill:#8e6cbd,color:#fff,stroke:#62478a
+  classDef type_dead_letter_queue fill:#fce7f3,color:#831843,stroke:#db2777
+  classDef type_file_system fill:#e2e8f0,color:#1e293b,stroke:#8296b5
+  classDef type_mongodb_collection fill:#38a169,color:#fff,stroke:#247a4a
+  classDef type_external_destination fill:#64748b,color:#fff,stroke:#475569
+  class n_1ou7976 type_dead_letter_queue
+  class n_1ug3vgo type_dead_letter_queue
+  class n_55c2ti type_external_destination
+  class n_dan7u type_file_system
+  class n_1mt5kn1 type_kafka_connector
+  class n_stv0ol type_kafka_connector
+  class n_17iv2ft type_kafka_connector
+  class n_2w18ko type_kafka_topic
+  class n_98uxjl type_mongodb_collection

@@ -1,0 +1,14 @@
+{
+  "name": "orders-mongodb-sink",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max": "3",
+    "kafka.cluster": "primary",
+    "topics": "orders",
+    "connection.uri": "mongodb://mongo-orders-dev.example.test:27017",
+    "database": "commerce",
+    "collection": "orders",
+    "errors.tolerance": "all",
+    "errors.deadletterqueue.topic.name": "orders-mongodb-dlq"
+  }
+}

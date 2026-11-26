@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: checkout
+  kafka:
+    bootstrap-servers: broker-a:9092
+    consumer:
+      group-id: checkout-v1
+  cloud:
+    stream:
+      bindings:
+        carts-in-0:
+          destination: carts
+        orders-out-0:
+          destination: orders

@@ -1,0 +1,36 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: production-connect
+spec:
+  replicas: 3
+  bootstrapServers: production-kafka-bootstrap:9092
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: inventory-cdc
+spec:
+  class: io.debezium.connector.postgresql.PostgresConnector
+  tasksMax: 2
+  config:
+    database.hostname: inventory-db
+    database.dbname: inventory
+    table.include.list: public.products,public.stock
+    topic.prefix: inventory
+    transforms: route
+    transforms.route.type: org.apache.kafka.connect.transforms.RegexRouter
+    transforms.route.regex: inventory.public.(.*)
+    transforms.route.replacement: inventory-$1
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: search-sink
+spec:
+  class: io.confluent.connect.elasticsearch.ElasticsearchSinkConnector
+  tasksMax: 6
+  config:
+    topics.regex: inventory-.*
+    connection.url: https://search.internal
+    errors.deadletterqueue.topic.name: search-dlq

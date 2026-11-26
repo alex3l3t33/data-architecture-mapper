@@ -1,0 +1,35 @@
+{
+  "name": "data-architecture-mapper",
+  "version": "0.1.0",
+  "description": "Local-first Obsidian architecture discovery for Kafka Connect and data platforms",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "benchmark": "vitest bench --run"
+  },
+  "keywords": [
+    "obsidian",
+    "kafka-connect",
+    "data-lineage",
+    "architecture"
+  ],
+  "author": "Alexandre",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "builtin-modules": "^5.0.0",
+    "esbuild": "^0.27.0",
+    "obsidian": "latest",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
+  },
+  "dependencies": {
+    "cytoscape": "^3.33.1",
+    "yaml": "^2.8.1"
+  }
+}

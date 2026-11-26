@@ -1,0 +1,156 @@
+# Synthetic infrastructure inventory for the Orders Pipeline demo.
+infrastructure:
+  clusters:
+    - name: cdp-dev
+      platform: CDP
+      environment: DEV
+      properties:
+        distribution: CDP Private Cloud Base
+        version: "7.1.9"
+        storage: HDFS
+      nodes:
+        - name: cdp-dev-worker-01
+          properties:
+            role: Data worker
+            cores: 16
+            memoryGiB: 64
+            osVersion: RHEL 8.9
+            zone: sample-zone-a
+        - name: cdp-dev-worker-02
+          properties:
+            role: Data worker
+            cores: 16
+            memoryGiB: 64
+            osVersion: RHEL 8.9
+            zone: sample-zone-b
+      edgeNodes:
+        - name: cdp-dev-edge-01
+          properties:
+            role: File transfer gateway
+            cores: 8
+            memoryGiB: 32
+            osVersion: RHEL 8.9
+            zone: sample-zone-a
+          cfts:
+            - name: orders-cft
+              properties:
+                description: Sample orders file transfer service
+                protocol: SFTP
+                direction: Inbound
+                payloadFormat: JSON Lines
+    - name: k8s-staging
+      platform: Kubernetes
+      environment: STAGING
+      properties:
+        version: "1.30.9"
+        containerRuntime: containerd
+      nodes:
+        - name: k8s-staging-worker-01
+          properties:
+            role: Worker
+            cores: 8
+            memoryGiB: 32
+            nodePool: staging-data
+            zone: sample-zone-a
+        - name: k8s-staging-worker-02
+          properties:
+            role: Worker
+            cores: 8
+            memoryGiB: 32
+            nodePool: staging-data
+            zone: sample-zone-b
+      namespaces:
+        - name: orders
+          quotas:
+            - name: compute
+              properties:
+                limits.cpu: "4"
+                limits.memory: "16Gi"
+    - name: k8s-production
+      platform: Kubernetes
+      environment: PRODUCTION
+      properties:
+        version: "1.32.2"
+        containerRuntime: containerd
+      nodes:
+        - name: k8s-production-worker-01
+          properties:
+            role: Worker
+            cores: 16
+            memoryGiB: 64
+            nodePool: production-data
+            zone: sample-zone-a
+        - name: k8s-production-worker-02
+          properties:
+            role: Worker
+            cores: 16
+            memoryGiB: 64
+            nodePool: production-data
+            zone: sample-zone-b
+  mongoInstances:
+    - name: mongo-audit-dev
+      environment: DEV
+      links:
+        connectors: [orders-audit-mongodb-sink]
+        applications: [order-intake]
+      properties:
+        host: mongo-audit-dev.example.test
+        port: 27017
+        version: "7.0.15"
+        cpu: 2
+        memory: "4 GiB"
+    - name: mongo-audit-staging
+      environment: STAGING
+      links:
+        connectors: [orders-audit-mongodb-sink]
+        applications: [order-intake]
+      properties:
+        host: mongo-audit-staging.example.test
+        port: 27017
+        version: "7.0.15"
+        cpu: 2
+        memory: "8 GiB"
+    - name: mongo-audit-prod
+      environment: PRODUCTION
+      links:
+        connectors: [orders-audit-mongodb-sink]
+        applications: [order-intake]
+      properties:
+        host: mongo-audit-prod.example.test
+        port: 27017
+        version: "7.0.15"
+        cpu: 4
+        memory: "16 GiB"
+    - name: mongo-orders-dev
+      environment: DEV
+      links:
+        connectors: [orders-mongodb-sink]
+        applications: [order-review]
+      properties:
+        host: mongo-orders-dev.example.test
+        port: 27017
+        version: "7.0.15"
+        cpu: 2
+        memory: "8 GiB"
+    - name: mongo-orders-staging
+      environment: STAGING
+      links:
+        connectors: [orders-mongodb-sink]
+        applications: [order-review]
+      properties:
+        host: mongo-orders-staging.example.test
+        port: 27017
+        version: "7.0.15"
+        cpu: 4
+        memory: "16 GiB"
+    - name: mongo-orders-prod
+      environment: PRODUCTION
+      links:
+        connectors: [orders-mongodb-sink]
+        applications: [order-review]
+      properties:
+        host: mongo-orders-prod.example.test
+        port: 27017
+        version: "7.0.15"
+        cpu: 4
+        memory: "16 GiB"

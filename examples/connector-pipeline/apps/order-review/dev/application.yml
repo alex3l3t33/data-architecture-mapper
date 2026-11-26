@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: order-review
+  kafka:
+    bootstrap-servers: broker-a:9092
+  data:
+    mongodb:
+      uri: mongodb://mongo-orders-dev.example.test:27017/commerce
+  cloud:
+    stream:
+      bindings:
+        orders-in-0:
+          destination: orders
+        reviewed-out-0:
+          destination: orders.reviewed
+        rejected-out-0:
+          destination: orders.rejected
+kafka:
+  cluster: primary

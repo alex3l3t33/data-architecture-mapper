@@ -1,0 +1,6 @@
+type: kafka-topic
+name: orders
+environment: STAGING
+cluster: primary
+partitions: 3
+replication.factor: 2

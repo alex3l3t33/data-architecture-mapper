@@ -1,0 +1,58 @@
+flowchart LR
+  n_1vcguvh["order-intake · Order intake"]
+  n_s7mgh["order-review · Order review"]
+  n_1ohjcc8[["orders-audit-mongodb-dlq"]]
+  n_1ou7976[["orders-mongodb-dlq"]]
+  n_1ug3vgo[["orders-search-dlq"]]
+  n_55c2ti[["https://search.example.test"]]
+  n_dan7u[["/data/orders.ndjson"]]
+  n_cy4ytz{{"orders-audit-mongodb-sink"}}
+  n_1mt5kn1{{"orders-file-source"}}
+  n_stv0ol{{"orders-mongodb-sink"}}
+  n_17iv2ft{{"orders-search-sink"}}
+  n_2w18ko(("orders"))
+  n_6i5ke6[("audit.order_events")]
+  n_123shbd[("commerce.orders")]
+  n_1xjqv82[("mongo-audit-dev")]
+  n_e3ote6[("mongo-orders-dev")]
+  n_1vcguvh -.->|USES_DATABASE| n_1xjqv82
+  n_s7mgh -.->|USES_DATABASE| n_e3ote6
+  n_dan7u -->|READS_FROM| n_1mt5kn1
+  n_cy4ytz -->|ROUTES_ERRORS_TO| n_1ohjcc8
+  n_cy4ytz -->|WRITES_TO| n_6i5ke6
+  n_cy4ytz -.->|WRITES_TO| n_1xjqv82
+  n_1mt5kn1 -->|PRODUCES| n_2w18ko
+  n_stv0ol -->|ROUTES_ERRORS_TO| n_1ou7976
+  n_stv0ol -->|WRITES_TO| n_123shbd
+  n_stv0ol -.->|WRITES_TO| n_e3ote6
+  n_17iv2ft -->|ROUTES_ERRORS_TO| n_1ug3vgo
+  n_17iv2ft -->|WRITES_TO| n_55c2ti
+  n_2w18ko -->|CONSUMES| n_cy4ytz
+  n_2w18ko -->|CONSUMES| n_stv0ol
+  n_2w18ko -->|CONSUMES| n_17iv2ft
+  n_6i5ke6 -.->|BELONGS_TO| n_1xjqv82
+  n_123shbd -.->|BELONGS_TO| n_e3ote6
+  classDef type_application fill:#4f7cac,color:#fff,stroke:#315b7d
+  classDef type_kafka_topic fill:#f3b61f,color:#17202a,stroke:#b58100
+  classDef type_kafka_connector fill:#8e6cbd,color:#fff,stroke:#62478a
+  classDef type_dead_letter_queue fill:#fce7f3,color:#831843,stroke:#db2777
+  classDef type_file_system fill:#e2e8f0,color:#1e293b,stroke:#8296b5
+  classDef type_mongodb_collection fill:#38a169,color:#fff,stroke:#247a4a
+  classDef type_mongodb_instance fill:#237a57,color:#fff,stroke:#14553a,stroke-width:2px
+  classDef type_external_destination fill:#64748b,color:#fff,stroke:#475569
+  class n_1vcguvh type_application
+  class n_s7mgh type_application
+  class n_1ohjcc8 type_dead_letter_queue
+  class n_1ou7976 type_dead_letter_queue
+  class n_1ug3vgo type_dead_letter_queue
+  class n_55c2ti type_external_destination
+  class n_dan7u type_file_system
+  class n_cy4ytz type_kafka_connector
+  class n_1mt5kn1 type_kafka_connector
+  class n_stv0ol type_kafka_connector
+  class n_17iv2ft type_kafka_connector
+  class n_2w18ko type_kafka_topic
+  class n_6i5ke6 type_mongodb_collection
+  class n_123shbd type_mongodb_collection
+  class n_1xjqv82 type_mongodb_instance
+  class n_e3ote6 type_mongodb_instance

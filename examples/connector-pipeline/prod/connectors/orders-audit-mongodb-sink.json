@@ -1,0 +1,14 @@
+{
+  "name": "orders-audit-mongodb-sink",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max": "4",
+    "kafka.cluster": "primary",
+    "topics": "orders",
+    "connection.uri": "mongodb://mongo-audit-prod.example.test:27017",
+    "database": "audit",
+    "collection": "order_events",
+    "errors.tolerance": "all",
+    "errors.deadletterqueue.topic.name": "orders-audit-mongodb-dlq"
+  }
+}

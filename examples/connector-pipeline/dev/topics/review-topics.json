@@ -1,0 +1,24 @@
+{
+  "topics": [
+    {
+      "type": "kafka-topic",
+      "name": "orders.reviewed",
+      "cluster": "primary",
+      "environment": "DEV",
+      "partitions": 6,
+      "replication.factor": 3,
+      "config": {
+        "cleanup.policy": "delete",
+        "retention.ms": 604800000
+      }
+    },
+    {
+      "type": "kafka-topic",
+      "name": "orders.rejected",
+      "cluster": "primary",
+      "environment": "DEV",
+      "partitions": 6,
+      "replication.factor": 3
+    }
+  ]
+}

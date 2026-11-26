@@ -1,0 +1,6 @@
+type: kafka-topic
+name: orders
+environment: DEV
+cluster: primary
+partitions: 6
+replication.factor: 3

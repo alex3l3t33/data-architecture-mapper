@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: order-intake
+  kafka:
+    bootstrap-servers: broker-a:9092
+  data:
+    mongodb:
+      uri: mongodb://mongo-audit-dev.example.test:27017/audit
+  cloud:
+    stream:
+      bindings:
+        orders-out-0:
+          destination: orders
+kafka:
+  cluster: primary

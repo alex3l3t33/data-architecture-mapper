@@ -1,0 +1,41 @@
+flowchart LR
+  n_1prpf19["order-intake · Order intake"]
+  n_umht8h["order-review · Order review"]
+  n_bkgq6w[["orders-audit-mongodb-dlq"]]
+  n_1dt471u[["orders-mongodb-dlq"]]
+  n_l7ud3j{{"orders-audit-mongodb-sink"}}
+  n_10klotp{{"orders-mongodb-sink"}}
+  n_espopo(("orders"))
+  n_tjjjqs[("audit_staging.order_events")]
+  n_11rg17[("commerce_staging.orders")]
+  n_51iuhq[("mongo-audit-staging")]
+  n_t4vgie[("mongo-orders-staging")]
+  n_1prpf19 -.->|USES_DATABASE| n_51iuhq
+  n_umht8h -.->|USES_DATABASE| n_t4vgie
+  n_l7ud3j -->|ROUTES_ERRORS_TO| n_bkgq6w
+  n_l7ud3j -->|WRITES_TO| n_tjjjqs
+  n_l7ud3j -.->|WRITES_TO| n_51iuhq
+  n_10klotp -->|ROUTES_ERRORS_TO| n_1dt471u
+  n_10klotp -->|WRITES_TO| n_11rg17
+  n_10klotp -.->|WRITES_TO| n_t4vgie
+  n_espopo -->|CONSUMES| n_l7ud3j
+  n_espopo -->|CONSUMES| n_10klotp
+  n_tjjjqs -.->|BELONGS_TO| n_51iuhq
+  n_11rg17 -.->|BELONGS_TO| n_t4vgie
+  classDef type_application fill:#4f7cac,color:#fff,stroke:#315b7d
+  classDef type_kafka_topic fill:#f3b61f,color:#17202a,stroke:#b58100
+  classDef type_kafka_connector fill:#8e6cbd,color:#fff,stroke:#62478a
+  classDef type_dead_letter_queue fill:#fce7f3,color:#831843,stroke:#db2777
+  classDef type_mongodb_collection fill:#38a169,color:#fff,stroke:#247a4a
+  classDef type_mongodb_instance fill:#237a57,color:#fff,stroke:#14553a,stroke-width:2px
+  class n_1prpf19 type_application
+  class n_umht8h type_application
+  class n_bkgq6w type_dead_letter_queue
+  class n_1dt471u type_dead_letter_queue
+  class n_l7ud3j type_kafka_connector
+  class n_10klotp type_kafka_connector
+  class n_espopo type_kafka_topic
+  class n_tjjjqs type_mongodb_collection
+  class n_11rg17 type_mongodb_collection
+  class n_51iuhq type_mongodb_instance
+  class n_t4vgie type_mongodb_instance

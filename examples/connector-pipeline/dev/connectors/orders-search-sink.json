@@ -1,0 +1,12 @@
+{
+  "name": "orders-search-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "tasks.max": "3",
+    "kafka.cluster": "primary",
+    "topics": "orders",
+    "connection.url": "https://search.example.test",
+    "errors.tolerance": "all",
+    "errors.deadletterqueue.topic.name": "orders-search-dlq"
+  }
+}
