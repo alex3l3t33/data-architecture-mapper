@@ -274,7 +274,6 @@
 .dam-empty { display: grid; place-items: center; align-content: center; min-height: 42vh; text-align: center; color: var(--text-muted); padding: 14px; }
 .dam-empty svg { width: 34px; height: 34px; }
 .dam-settings-project { margin: 14px 0 24px; padding: 12px; border: 1px solid var(--background-modifier-border); border-radius: 8px; }
-.dam-settings-project h3 { margin-top: 0; }
 
 /* Export and Mermaid dialogs */
 .dam-wide-modal { width: min(780px, calc(100vw - 30px)); max-width: calc(100vw - 30px); }

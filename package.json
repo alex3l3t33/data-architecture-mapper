@@ -1,6 +1,6 @@
 {
   "name": "data-architecture-mapper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local-first Obsidian architecture discovery for Kafka Connect and data platforms",
   "main": "main.js",
   "type": "module",

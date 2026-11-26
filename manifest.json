@@ -1,8 +1,8 @@
 {
   "id": "data-architecture-mapper",
   "name": "Data Architecture Mapper",
-  "version": "0.1.0",
-  "minAppVersion": "1.5.0",
+  "version": "0.1.1",
+  "minAppVersion": "1.7.2",
   "description": "Discover, visualize, validate, and document Kafka Connect and data platform architecture from vault configuration files.",
   "author": "Alexandre",
   "authorUrl": "https://github.com/alex3l3t33",

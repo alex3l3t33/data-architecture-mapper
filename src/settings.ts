@@ -45,12 +45,12 @@ export class DataArchitectureSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Data Architecture Mapper" });
+    new Setting(containerEl).setName("Data Architecture Mapper").setHeading();
     containerEl.createEl("p", { text: "Projects are scanned locally. Configuration never leaves the vault." });
 
     for (const [index, project] of this.host.settings.projects.entries()) {
       const section = containerEl.createDiv({ cls: "dam-settings-project" });
-      section.createEl("h3", { text: project.name || `Project ${index + 1}` });
+      new Setting(section).setName(project.name || `Project ${index + 1}`).setHeading();
       textSetting(section, "Project name", "A readable project name", project.name, async (value) => {
         project.name = value;
         await this.host.saveSettings();
