@@ -45,7 +45,6 @@ export class DataArchitectureSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    new Setting(containerEl).setName("Data Architecture Mapper").setHeading();
     containerEl.createEl("p", { text: "Projects are scanned locally. Configuration never leaves the vault." });
 
     for (const [index, project] of this.host.settings.projects.entries()) {
