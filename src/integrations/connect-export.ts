@@ -131,7 +131,7 @@ function exportPath(project: ProjectConfig, environment: ConnectExportEnvironmen
 
 function vaultPath(...parts: string[]): string {
   const segments = parts.join("/").split("/").filter(Boolean);
-  if (segments.some((part) => part === "." || part === ".." || /[\x00-\x1f]/.test(part))) {
+  if (segments.some((part) => part === "." || part === ".." || [...part].some((character) => character.charCodeAt(0) < 32))) {
     throw new Error("Use a vault-relative folder without dot segments.");
   }
   return segments.join("/");

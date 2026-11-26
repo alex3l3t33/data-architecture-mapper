@@ -1,5 +1,5 @@
 import { FuzzySuggestModal, ItemView, Notice, TFolder, WorkspaceLeaf, setIcon, type App } from "obsidian";
-import cytoscape, { type Core, type NodeSingular } from "cytoscape";
+import cytoscape, { type Core, type EventObjectNode, type NodeSingular } from "cytoscape";
 import type { ArchitectureComponent, ArchitectureGraph, ComponentType, PluginSettings, ProjectConfig, SubprojectConfig, ValidationFinding } from "../model/types";
 import type { ArchitectureEngine, ProjectAnalysis } from "../services/architecture-engine";
 import { EnvironmentComparator } from "../environment/compare";
@@ -127,7 +127,7 @@ export class DataArchitectureDashboardView extends ItemView {
     heading.createEl("h2", { text: this.activeTab === "Overview" ? "Project overview" : this.activeTab });
     if (project.subprojects?.length && this.activeTab !== "Change History") this.renderSubprojectPicker(heading, project.subprojects);
     if (this.activeTab === "Overview" && !subproject) {
-      heading.createEl("span", { text: `${analysis.scannedFiles} files scanned · ${analysis.durationMs.toFixed(0)} ms`, cls: "dam-scan-status" });
+      heading.createSpan({ text: `${analysis.scannedFiles} files scanned · ${analysis.durationMs.toFixed(0)} ms`, cls: "dam-scan-status" });
     }
     const filters = page.createDiv({ cls: "dam-filters" });
     const body = page.createDiv({ cls: "dam-body" });
@@ -342,7 +342,7 @@ export class DataArchitectureDashboardView extends ItemView {
       setIcon(row.createSpan({ cls: `dam-env-icon ${environmentTone(environment)}` }), "layers");
       const text = row.createDiv();
       text.createEl("strong", { text: environment });
-      text.createEl("span", { text: counts.nodes ? `${counts.connectors} connectors · ${counts.topics} topics` : "No components discovered" });
+      text.createSpan({ text: counts.nodes ? `${counts.connectors} connectors · ${counts.topics} topics` : "No components discovered" });
       row.createSpan({ text: `${counts.nodes} components`, cls: "dam-env-count" });
       setIcon(row.createSpan(), "chevron-right");
       row.onclick = () => {
@@ -510,18 +510,18 @@ export class DataArchitectureDashboardView extends ItemView {
       this.graphLayout = layout.value;
       applyLayout();
     };
-    this.cytoscape.on("tap", "node", (event) => {
+    canvas.on("tap", "node", (event: EventObjectNode) => {
       const id = event.target.id();
       if (id.startsWith("__group__")) {
         const children = event.target.children();
-        const hidden = children.every((child: unknown) => (child as NodeSingular).style("display") === "none");
+        const hidden = children.every((child) => child.style("display") === "none");
         children.style("display", hidden ? "element" : "none");
-        this.cytoscape?.fit(undefined, 30);
+        canvas.fit(undefined, 30);
         return;
       }
       this.selectComponent(id);
     });
-    canvas.on("tap", (event) => { if (event.target === canvas) this.selectComponent(undefined); });
+    canvas.on("tap", (event: { target: unknown }) => { if (event.target === canvas) this.selectComponent(undefined); });
     this.highlightSelection();
   }
 
@@ -701,6 +701,7 @@ export class DataArchitectureDashboardView extends ItemView {
       const name = [change.parentPath, change.componentName].filter(Boolean).join(" / ");
       return {
         id: change.id,
+        cls: workloads.length ? undefined : "dam-history-no-workloads",
         cells: [
           date(change.observedAt), change.environment,
           componentIds.has(change.componentId) ? {
@@ -758,8 +759,8 @@ export class DataArchitectureDashboardView extends ItemView {
     container.createEl("h3", { text: component.name });
     const infrastructure = INFRASTRUCTURE_TYPES.has(component.type);
     const type = infrastructure ? infrastructureTypeLabel(component.type) : readable(component.type);
-    container.createEl("div", { text: `${type} · ${component.environment}`, cls: "dam-badge" });
-    if (component.unresolved) container.createEl("div", { text: "Unresolved", cls: "dam-badge dam-error" });
+    container.createDiv({ text: `${type} · ${component.environment}`, cls: "dam-badge" });
+    if (component.unresolved) container.createDiv({ text: "Unresolved", cls: "dam-badge dam-error" });
     if (component.type === "kafka-connector") {
       const actions = container.createDiv({ cls: "dam-inspector-actions" });
       action(actions, "Connector Mermaid", "workflow", "dam-outline-accent").onclick = () => this.openConnectorMermaid(
@@ -927,9 +928,16 @@ class ConnectorFolderPicker extends FuzzySuggestModal<TFolder> {
   }
 
   getItems(): TFolder[] {
-    return this.app.vault.getAllLoadedFiles().filter((entry): entry is TFolder =>
-      entry instanceof TFolder && (this.root === undefined || isInside(entry.path, this.root))
-    );
+    const rootPath = this.root?.replace(/^\/+|\/+$/g, "");
+    const root = rootPath ? this.app.vault.getFolderByPath(rootPath) : this.app.vault.getRoot();
+    if (!root) return [];
+    const folders = [root];
+    for (const folder of folders) {
+      for (const child of folder.children) {
+        if (child instanceof TFolder && !isInside(child.path, this.app.vault.configDir)) folders.push(child);
+      }
+    }
+    return folders.sort((a, b) => a.path.localeCompare(b.path));
   }
 
   getItemText(folder: TFolder): string {
@@ -1114,11 +1122,12 @@ function downloadSvg(graph: Core, filename: string): void {
     return `<g><circle cx="${position.x + offsetX}" cy="${position.y + offsetY}" r="23" fill="${color}"/><text x="${position.x + offsetX}" y="${position.y + offsetY + 36}" text-anchor="middle" fill="#334155" font-family="sans-serif" font-size="10">${label}</text></g>`;
   }).join("");
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/></marker></defs><rect width="100%" height="100%" fill="#ffffff"/>${edges}${nodes}</svg>`;
+  const host = graph.container();
+  if (!host) return;
   const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
+  const link = host.createEl("a", { attr: { href: url, download: filename, hidden: true } });
   link.click();
+  link.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 

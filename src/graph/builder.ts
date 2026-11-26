@@ -528,17 +528,28 @@ function mergeProperties(
   next: Record<string, ProvenancedValue>,
   evidence: SourceEvidence
 ): Record<string, ProvenancedValue> {
-  const merged: Record<string, ProvenancedValue> = Object.assign(Object.create(null), current);
-  const conflicts: Record<string, unknown> = Object.assign(Object.create(null), current._conflicts?.value);
+  const merged = new Map(Object.entries(current));
+  const beforeConflicts = current._conflicts?.value;
+  const conflicts = new Map<string, unknown>(beforeConflicts !== null && typeof beforeConflicts === "object"
+    ? Object.entries(beforeConflicts) : []);
   for (const [key, value] of Object.entries(next)) {
-    if (!merged[key]) merged[key] = value;
-    else if (JSON.stringify(merged[key]!.value) !== JSON.stringify(value.value)) {
-      conflicts[key] = [...new Set([JSON.stringify(merged[key]!.value), JSON.stringify(value.value)])].map((entry) => JSON.parse(entry) as unknown);
-      merged[key]!.evidence = mergeEvidence(merged[key]!.evidence, value.evidence);
-    } else merged[key]!.evidence = mergeEvidence(merged[key]!.evidence, value.evidence);
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, value);
+      continue;
+    }
+    const before = JSON.stringify(existing.value);
+    const after = JSON.stringify(value.value);
+    if (before !== after) {
+      conflicts.set(key, [before, after].map((serialized) => {
+        const decoded: unknown = serialized === undefined ? undefined : JSON.parse(serialized);
+        return decoded;
+      }));
+    }
+    existing.evidence = mergeEvidence(existing.evidence, value.evidence);
   }
-  if (Object.keys(conflicts).length) merged._conflicts = { value: conflicts, origin: "inferred", evidence: [evidence] };
-  return Object.fromEntries(Object.entries(merged).sort(([a], [b]) => a.localeCompare(b)));
+  if (conflicts.size) merged.set("_conflicts", { value: Object.fromEntries(conflicts), origin: "inferred", evidence: [evidence] });
+  return Object.fromEntries([...merged].sort(([a], [b]) => a.localeCompare(b)));
 }
 
 function mergeEvidence(a: SourceEvidence[], b: SourceEvidence[]): SourceEvidence[] {

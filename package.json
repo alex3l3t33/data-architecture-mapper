@@ -1,6 +1,6 @@
 {
   "name": "data-architecture-mapper",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Local-first Obsidian architecture discovery for Kafka Connect and data platforms",
   "main": "main.js",
   "type": "module",
@@ -22,7 +22,6 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "builtin-modules": "^5.0.0",
     "esbuild": "^0.27.0",
     "obsidian": "latest",
     "typescript": "^5.9.3",

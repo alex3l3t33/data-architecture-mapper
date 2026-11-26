@@ -15,9 +15,11 @@ export async function runConnectScript(app: App, environment: ConnectExportEnvir
   }
   const scriptPath = connectScriptPath(value);
   // Load Node APIs only inside the explicit desktop action.
-  const fs = require("fs/promises") as typeof import("node:fs/promises");
-  const path = require("path") as typeof import("node:path");
-  const { spawn } = require("child_process") as typeof import("node:child_process");
+  const [fs, path, { spawn }] = await Promise.all([
+    import("fs/promises"),
+    import("path"),
+    import("child_process")
+  ]);
 
   const vaultRoot = await fs.realpath(adapter.getBasePath());
   if (activeVaults.has(vaultRoot)) throw new Error("A script is already running for this vault.");

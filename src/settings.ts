@@ -15,7 +15,7 @@ export function createDefaultProject(index: number): ProjectConfig {
     rootFolder: "",
     documentationFolder: `Data Architecture/${name}`,
     includedFolders: [],
-    excludedFolders: [".obsidian", "node_modules", ".git"],
+    excludedFolders: ["node_modules", ".git"],
     environments: [
       { name: "DEV", folderPrefixes: ["dev", "development"] },
       { name: "STAGING", folderPrefixes: ["staging", "stage"] },
@@ -106,7 +106,7 @@ export class DataArchitectureSettingTab extends PluginSettingTab {
           await this.host.saveSettings();
           new Notice(`${project.name} is now active.`);
         }))
-        .addButton((button) => button.setWarning().setButtonText("Remove").onClick(async () => {
+        .addButton((button) => button.setClass("mod-warning").setButtonText("Remove").onClick(async () => {
           this.host.settings.projects.splice(index, 1);
           if (this.host.settings.activeProjectId === project.id) this.host.settings.activeProjectId = this.host.settings.projects[0]?.id;
           await this.host.saveSettings();
@@ -135,7 +135,7 @@ export class DataArchitectureSettingTab extends PluginSettingTab {
         .addButton((button) => button.setButtonText("Edit").setTooltip(`Edit ${environment.name}`).onClick(() => {
           this.editEnvironment(project, environment);
         }))
-        .addButton((button) => button.setButtonText("Remove").setTooltip(`Remove the ${environment.name} mapping`).setWarning().onClick(async () => {
+        .addButton((button) => button.setButtonText("Remove").setTooltip(`Remove the ${environment.name} mapping`).setClass("mod-warning").onClick(async () => {
           try {
             const next = project.environments.filter((rule) => rule !== environment);
             await this.saveScopeRules(project, "environments", next, "Environment");
@@ -188,7 +188,7 @@ export class DataArchitectureSettingTab extends PluginSettingTab {
         .addButton((button) => button.setButtonText("Edit").setTooltip(`Edit ${subproject.name}`).onClick(() => {
           this.editSubproject(project, subproject);
         }))
-        .addButton((button) => button.setButtonText("Remove").setTooltip(`Remove ${subproject.name} from this project`).setWarning().onClick(async () => {
+        .addButton((button) => button.setButtonText("Remove").setTooltip(`Remove ${subproject.name} from this project`).setClass("mod-warning").onClick(async () => {
           try {
             await this.saveSubprojects(project, (current) => current.filter((entry) => entry.id !== subproject.id));
           } catch (error) {
@@ -273,7 +273,7 @@ class ProjectScopeEditor extends Modal {
   }
 
   onOpen(): void {
-    const { kind, existing, save } = this.options;
+    const { kind, existing } = this.options;
     const environment = kind === "environment";
     const label = environment ? "Environment" : "Subproject";
     this.setTitle(`${existing ? "Edit" : "Add"} ${kind}`);
@@ -300,7 +300,7 @@ class ProjectScopeEditor extends Modal {
         status.empty();
         button.setDisabled(true);
         try {
-          await save(name, folder);
+          await this.options.save(name, folder);
           this.close();
         } catch (error) {
           status.setText(error instanceof Error ? error.message : `Could not save the ${kind}.`);

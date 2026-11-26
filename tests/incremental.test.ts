@@ -15,11 +15,16 @@ const mocks = vi.hoisted(() => {
       this.content = content;
     }
   }
-  return { TFileMock };
+  class TFolderMock {
+    children: Array<TFileMock | TFolderMock> = [];
+    constructor(readonly path: string) {}
+  }
+  return { TFileMock, TFolderMock };
 });
 
 vi.mock("obsidian", () => ({
   TFile: mocks.TFileMock,
+  TFolder: mocks.TFolderMock,
   normalizePath: (value: string) => value.replace(/\/{2,}/g, "/")
 }));
 
@@ -29,7 +34,30 @@ import { project } from "./helpers";
 class VaultMock {
   files = new Map<string, InstanceType<typeof mocks.TFileMock>>();
 
-  getFiles() { return [...this.files.values()]; }
+  configDir = "vault-config";
+  getRoot() { return this.folderTree().get("/")!; }
+  getFolderByPath(path: string) { return this.folderTree().get(path) ?? null; }
+
+  private folderTree() {
+    const root = new mocks.TFolderMock("/");
+    const folders = new Map([["/", root]]);
+    for (const file of this.files.values()) {
+      let parent = root;
+      let path = "";
+      for (const segment of file.path.split("/").slice(0, -1)) {
+        path = path ? `${path}/${segment}` : segment;
+        let folder = folders.get(path);
+        if (!folder) {
+          folder = new mocks.TFolderMock(path);
+          folders.set(path, folder);
+          parent.children.push(folder);
+        }
+        parent = folder;
+      }
+      parent.children.push(file);
+    }
+    return folders;
+  }
   getAbstractFileByPath(path: string) { return this.files.get(path) ?? null; }
   async cachedRead(file: InstanceType<typeof mocks.TFileMock>) { return file.content; }
   async createFolder() { return undefined; }
@@ -68,6 +96,33 @@ describe("incremental refresh", () => {
     vault.files.delete(path);
     const deleted = await engine.refreshPath(configuredProject, path);
     expect(deleted.graph.components).toHaveLength(0);
+  });
+
+  it("scans only project folders and skips the configured Obsidian settings directory", async () => {
+    vault.configDir = "architecture/custom-config";
+    const paths = new Map([
+      ["architecture/apps/chosen/application.properties", "chosen"],
+      ["architecture/apps/excluded/application.properties", "excluded"],
+      ["architecture/custom-config/application.properties", "config"],
+      ["architecture/generated/application.properties", "generated"],
+      ["architecture/sibling/application.properties", "sibling"],
+      ["outside/application.properties", "outside"]
+    ]);
+    for (const [path, name] of paths) {
+      vault.files.set(path, new mocks.TFileMock(path, `spring.application.name=${name}\nkafka.cluster=primary`));
+    }
+
+    const engine = new ArchitectureEngine(vault as never);
+    const scoped = project({
+      includedFolders: ["apps", "custom-config", "generated"],
+      excludedFolders: ["apps/excluded"]
+    });
+    const scan = await engine.scan(scoped);
+    expect(scan.scannedFiles).toBe(1);
+    expect(scan.graph.components.filter((component) => component.type === "application").map((app) => app.name)).toEqual(["chosen"]);
+    const refreshed = await engine.refreshPath(scoped, "architecture/custom-config/application.properties");
+    expect(refreshed.scannedFiles).toBe(1);
+    expect((await engine.scan(project({ rootFolder: "missing-folder" }))).scannedFiles).toBe(0);
   });
 
   it("uses subproject-local environment folders and keeps explicit parent prefixes first", async () => {

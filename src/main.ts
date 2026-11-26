@@ -1,4 +1,4 @@
-import { Notice, Plugin, TFile, type TAbstractFile, type WorkspaceLeaf } from "obsidian";
+import { Notice, Plugin, TFile, type TAbstractFile } from "obsidian";
 import type { ArchitectureSnapshot, PluginSettings, ProjectConfig } from "./model/types";
 import { ArchitectureEngine, type ProjectAnalysis } from "./services/architecture-engine";
 import { createDefaultProject, DataArchitectureSettingTab, DEFAULT_SETTINGS } from "./settings";

@@ -14,6 +14,8 @@ const context = await esbuild.context({
   external: ["obsidian", "electron", "@codemirror/*", ...builtinModules],
   format: "cjs",
   target: "es2022",
+  // The Obsidian desktop renderer can load Node built-ins via CommonJS.
+  supported: { "dynamic-import": false },
   logLevel: "info",
   banner: { js: `/*! Bundled library notices\n\n${notices.join("\n\n")}\n*/` },
   sourcemap: production ? false : "inline",
